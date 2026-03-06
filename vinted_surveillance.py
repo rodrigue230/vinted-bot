@@ -1,20 +1,16 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-import time
-import json
-import smtplib
 import requests
-from email.mime.text import MIMEText
+from bs4 import BeautifulSoup
+import json
 
 URL = "https://www.vinted.fr/catalog?search_text=bosch+carlotta"
 CHECK_FILE = "seen_items.json"
-TELEGRAM_TOKEN="7802981919:AAHV5-ptPsNkEK2zLgmxokqmyaZjIz1XR3g"
-TELEGRAM_CHAT_ID="2049467518"
-EMAIL_SENDER = "rody.nalinnes@gmail.com"
-EMAIL_PASSWORD = "Glafira-10508404v"
-EMAIL_RECEIVER = "rody.nalinnes@gmail.com"
+
+TELEGRAM_TOKEN = "TON_TOKEN"
+TELEGRAM_CHAT_ID = "TON_CHAT_ID"
+
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
 
 try:
     with open(CHECK_FILE, "r") as f:
@@ -22,46 +18,34 @@ try:
 except:
     seen_items = []
 
-options = webdriver.ChromeOptions()
-
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-
-driver.get(URL)
-time.sleep(5)
+response = requests.get(URL, headers=headers)
+soup = BeautifulSoup(response.text, "html.parser")
 
 items = []
-ads = driver.find_elements(By.CSS_SELECTOR, "a[data-testid='item-box']")
 
-for ad in ads:
-    title = ad.text
-    link = ad.get_attribute("href")
-    items.append({"title": title, "link": link})
+for a in soup.select("a[href*='/items/']"):
+    title = a.get_text(strip=True)
+    link = "https://www.vinted.fr" + a.get("href")
 
-driver.quit()
+    if title:
+        items.append({"title": title, "link": link})
 
-new_items = [item for item in items if item not in seen_items]
+new_items = [i for i in items if i not in seen_items]
 
 if new_items:
-    message_body = "Nouvelle pièce détectée sur Vinted :\n\n"
+    message = "Nouvelle pièce Vinted détectée :\n\n"
+
     for item in new_items:
-        message_body += f"{item['title']}\n{item['link']}\n\n"
+        message += f"{item['title']}\n{item['link']}\n\n"
 
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    data = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": message_body
-    }
-
-    requests.post(url, data=data)
+    requests.post(
+        f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
+        data={
+            "chat_id": TELEGRAM_CHAT_ID,
+            "text": message
+        }
+    )
 
 with open(CHECK_FILE, "w") as f:
     json.dump(items, f)
 
-url = "https://api.telegram.org/bot7802981919:AAHV5-ptPsNkEK2zLgmxokqmyaZjIz1XR3g/sendMessage"
-
-data = {
-    "chat_id": "2049467518",
-    "text": "TEST TELEGRAM OK"
-}
-
-requests.post(url, data=data)
