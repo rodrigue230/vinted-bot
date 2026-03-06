@@ -8,9 +8,7 @@ CHECK_FILE = "seen_items.json"
 TELEGRAM_TOKEN = "TON_TOKEN"
 TELEGRAM_CHAT_ID = "TON_CHAT_ID"
 
-headers = {
-    "User-Agent": "Mozilla/5.0"
-}
+headers = {"User-Agent": "Mozilla/5.0"}
 
 try:
     with open(CHECK_FILE, "r") as f:
@@ -34,18 +32,15 @@ new_items = [i for i in items if i not in seen_items]
 
 if new_items:
     message = "Nouvelle pièce Vinted détectée :\n\n"
-
     for item in new_items:
         message += f"{item['title']}\n{item['link']}\n\n"
 
     requests.post(
         f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
-        data={
-            "chat_id": TELEGRAM_CHAT_ID,
-            "text": message
-        }
+        data={"chat_id": TELEGRAM_CHAT_ID, "text": message},
     )
 
 with open(CHECK_FILE, "w") as f:
     json.dump(items, f)
+
 
