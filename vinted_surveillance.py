@@ -5,8 +5,8 @@ import json
 URL = "https://www.vinted.fr/catalog?search_text=bosch+carlotta"
 CHECK_FILE = "seen_items.json"
 
-TELEGRAM_TOKEN = "TON_TOKEN"
-TELEGRAM_CHAT_ID = "TON_CHAT_ID"
+TELEGRAM_TOKEN = "7802981919:AAHV5-ptPsNkEK2zLgmxokqmyaZjIz1XR3g"
+TELEGRAM_CHAT_ID = "2049467518"
 
 headers = {"User-Agent": "Mozilla/5.0"}
 
@@ -42,6 +42,7 @@ if new_items:
 
 with open(CHECK_FILE, "w") as f:
     json.dump(items, f)
+
 
 
 
